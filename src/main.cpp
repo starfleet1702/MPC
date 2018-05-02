@@ -111,16 +111,10 @@ int main() {
 		  double throttle_prev = j[1]["throttle"];
 
 		  //Converting velocity to meters per second from mph
-		  // v = v * MPH_TO_MPS;
+		  v = v * MPH_TO_MPS;
 		  
 		  // cout<<"1"<<endl;
 		  
-          /*
-          * TODO: Calculate steering angle and throttle using MPC.
-          *
-          * Both are in between [-1, 1].
-          *
-          */
 		  
 		  //1. Converting points to vehicles cordinate system
 		  Eigen::VectorXd ptsx_cvt = Eigen::VectorXd::Zero(ptsx.size());
@@ -183,7 +177,11 @@ int main() {
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
-
+		  
+		  // if((steer_value >= 0.8) || (steer_value <= -0.8)){
+			// cout<<" steer :"<<steer_value<<" throttle : "<<throttle_value<<endl;
+		  // }
+		  
           //Display the MPC predicted trajectory 
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
@@ -191,11 +189,13 @@ int main() {
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
 
-		  for(int i=0;i<vars.size();i++){
+		  for(int i=2;i<vars.size();i++){
 			if(i%2==0){
 				mpc_x_vals.push_back(vars[i]);
+				//cout<<"x : "<<vars[i];
 			}else{
 				mpc_y_vals.push_back(vars[i]);
+				//cout<<" y : "<<vars[i]<<endl;
 			}
 		  }
 		  

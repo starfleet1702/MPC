@@ -1,5 +1,6 @@
 #define NUM_STATE_VAR 6 // [x y psi v cte epsi]
 #define NUM_ACTUATOR_VAR 2
+#define MPH_TO_MPS 0.44704
 
 #include "MPC.h"
 #include <cppad/cppad.hpp>
@@ -9,8 +10,11 @@
 using CppAD::AD;
 
 // DONE: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.1;
+// size_t N = 10;
+// double dt = 0.1;
+
+size_t N = 20;
+double dt = 0.2;
 
 /* ------------------START INDEX---------------------------
  * Variables to store starting index of different parameters
@@ -40,7 +44,7 @@ size_t A_START = DELTA_START + N - 1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-double ref_v = 8;//reference/desired velocity in mph(miles per hour)
+double ref_v = 9.0*MPH_TO_MPS;//reference/desired velocity in mph(miles per hour)
 
 class FG_eval {
  public:
@@ -61,21 +65,19 @@ class FG_eval {
 	
 	fg[0] = 0.0;
 	
-	//TODO : Add Weights
-	
 	// Adding SE of CTE , EPSI and DIFF_VELOCITY to cost function
 	for(size_t t = 0; t < N; t++){
-		fg[0] +=  0.41*CppAD::pow(vars[CTE_START+t],2);
-		fg[0] +=  0.41*CppAD::pow(vars[EPSI_START+t],2);
-		fg[0] +=  0.03*CppAD::pow(vars[V_START+t]-ref_v,2);
+		fg[0] +=  0.25*CppAD::pow(vars[CTE_START+t],2);
+		fg[0] +=  0.25*CppAD::pow(vars[EPSI_START+t],2);
+		fg[0] +=  0.25*CppAD::pow(vars[V_START+t]-ref_v,2);
 		
 	}
 	// Adding Square of value of delta and acceleration to minimize heavy use of actuators
 	for(size_t t = 0; t < N-1; t++){
 		fg[0] +=  7e-4*CppAD::pow(vars[DELTA_START+t],2);
 		fg[0] +=  7e-4*CppAD::pow(vars[A_START+t],2);
-		// try adding penalty for speed + steer
-		fg[0] += 0.1*CppAD::pow(vars[DELTA_START + t] * vars[V_START+t], 2);
+		// penalty for speed * steer
+		fg[0] += 0.19*CppAD::pow(vars[DELTA_START + t] * vars[V_START+t], 2);
 	}
 	
 	// Adding sequential difference of actuations for smooth driving
@@ -282,10 +284,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
-  // return {solution.x[X_START + 1],   solution.x[Y_START + 1],
-          // solution.x[PSI_START + 1], solution.x[V_START + 1],
-          // solution.x[CTE_START + 1], solution.x[EPSI_START + 1],
-		  // solution.x[DELTA_START],   solution.x[A_START]};
 	
   // DONE: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
