@@ -155,14 +155,29 @@ int main() {
 		  // double new_psi = psi - (v/Lf)*steer_prev*latency; // psi = psi0 + (v/Lf)*delta*latency;
 		  // double new_v = v + throttle_prev*latency; // v = v0 + a*latency;
 		  
-		  double new_x =  v*cos(psi)*latency; // x = x0 + v*cos(psi)*latency
-		  double new_y =  v*sin(psi)*latency; // y = y0 + v*sin(psi)*latency
+		  
+		  // double new_x =  v*cos(psi)*latency; // x = x0 + v*cos(psi)*latency
+		  // double new_y =  v*sin(psi)*latency; // y = y0 + v*sin(psi)*latency
+		  // double new_psi = -(v/Lf)*steer_prev*latency; // psi = psi0 + (v/Lf)*delta*latency;
+		  // double new_v = v + throttle_prev*latency; // v = v0 + a*latency;
+		  // double new_cte = ;
+		  // double new_epsi = ;
+		  
+		  //considering psi = 0
+		  double new_x =  v*latency; //v*cos(0)*latency // x = x0 + v*cos(psi)*latency
+		  double new_y =  0.0;//v*sin(0)*latency // y = y0 + v*sin(psi)*latency
 		  double new_psi = -(v/Lf)*steer_prev*latency; // psi = psi0 + (v/Lf)*delta*latency;
 		  double new_v = v + throttle_prev*latency; // v = v0 + a*latency;
 		  
+		  // double new_cte = polyeval(coeffs,new_x) - new_y;
+		  // double new_epsi = new_psi - (atan(3*coeffs[3]*new_x*new_x + 2*coeffs[2]*new_x + coeffs[1]));
+		  
+		  double new_cte = cte + v*sin(epsi)*latency;
+		  double new_epsi = epsi - (v/Lf)*steer_prev*latency; //considering delta negative
+		  
 		  // cout<<"before solve"<<endl;
 		  
-		  state << new_x,new_y,new_psi,new_v,cte,epsi;
+		  state << new_x,new_y,new_psi,new_v,new_cte,new_epsi;
 		  // state << 0.0,0.0,0.0,v,cte,epsi;
 		  
 		  auto vars = mpc.Solve(state,coeffs);
