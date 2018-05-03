@@ -13,8 +13,8 @@ using CppAD::AD;
 // size_t N = 10;
 // double dt = 0.1;
 
-size_t N = 20;
-double dt = 0.2;
+size_t N = 15;
+double dt = 0.1;
 
 /* ------------------START INDEX---------------------------
  * Variables to store starting index of different parameters
@@ -44,7 +44,7 @@ size_t A_START = DELTA_START + N - 1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-double ref_v = 9.0*MPH_TO_MPS;//reference/desired velocity in mph(miles per hour)
+double ref_v = 40.0*MPH_TO_MPS;//reference/desired velocity in mph(miles per hour)
 
 class FG_eval {
  public:
@@ -67,23 +67,23 @@ class FG_eval {
 	
 	// Adding SE of CTE , EPSI and DIFF_VELOCITY to cost function
 	for(size_t t = 0; t < N; t++){
-		fg[0] +=  0.25*CppAD::pow(vars[CTE_START+t],2);
-		fg[0] +=  0.25*CppAD::pow(vars[EPSI_START+t],2);
-		fg[0] +=  0.25*CppAD::pow(vars[V_START+t]-ref_v,2);
+		fg[0] +=  25*CppAD::pow(vars[CTE_START+t],2);
+		fg[0] +=  25*CppAD::pow(vars[EPSI_START+t],2);
+		fg[0] +=  2*CppAD::pow(vars[V_START+t]-ref_v,2);
 		
 	}
 	// Adding Square of value of delta and acceleration to minimize heavy use of actuators
 	for(size_t t = 0; t < N-1; t++){
-		fg[0] +=  7e-4*CppAD::pow(vars[DELTA_START+t],2);
-		fg[0] +=  7e-4*CppAD::pow(vars[A_START+t],2);
+		fg[0] +=  0.7*CppAD::pow(vars[DELTA_START+t],2);
+		fg[0] +=  0.7*CppAD::pow(vars[A_START+t],2);
 		// penalty for speed * steer
-		fg[0] += 0.19*CppAD::pow(vars[DELTA_START + t] * vars[V_START+t], 2);
+		fg[0] += 19*CppAD::pow(vars[DELTA_START + t] * vars[V_START+t], 2);
 	}
 	
 	// Adding sequential difference of actuations for smooth driving
 	for(size_t t = 1; t < N-1; t++){
-		fg[0] +=  0.03*CppAD::pow(vars[DELTA_START+t] - vars[DELTA_START+t-1],2);
-		fg[0] +=  0.0014*CppAD::pow(vars[A_START+t] - vars[A_START+t-1],2);
+		fg[0] +=  3*CppAD::pow(vars[DELTA_START+t] - vars[DELTA_START+t-1],2);
+		fg[0] +=  1.4*CppAD::pow(vars[A_START+t] - vars[A_START+t-1],2);
 	}
 	
 	//---------------Vehicle Model Constrains----------------
@@ -280,7 +280,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   // Cost
   auto cost = solution.obj_value;
-  // std::cout << "Cost " << cost << std::endl;
+  std::cout << "Cost " << cost << std::endl;
   
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
